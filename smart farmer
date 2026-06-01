@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Farmer Dashboard</title>
+    <style>
+        :root {
+            --bg-color: #0d1310;
+            --card-bg: #141f19;
+            --primary: #2ecc71;
+            --primary-dark: #27ae60;
+            --text: #ffffff;
+            --text-muted: #a0aec0;
+            --danger: #e74c3c;
+            --warning: #f1c40f;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text); padding: 15px; }
+        .hidden { display: none !important; }
+        
+        /* Header */
+        header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; border-bottom: 1px solid #1e3026; margin-bottom: 20px; }
+        .logo { color: var(--primary); font-size: 22px; font-weight: bold; font-family: 'Arial'; }
+        .logout-btn { background: var(--danger); color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
+
+        /* Navigation */
+        nav { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
+        nav button { background: #1a2920; color: var(--text-muted); border: 1px solid #253d30; padding: 8px 16px; border-radius: 20px; cursor: pointer; white-space: nowrap; }
+        nav button.active { background: var(--primary); color: #000; font-weight: bold; }
+
+        /* Cards & Layout */
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
+        .card { background: var(--card-bg); border: 1px solid #1e3026; padding: 15px; border-radius: 10px; text-align: center; }
+        .card h3 { font-size: 14px; color: var(--text-muted); margin-bottom: 5px; }
+        .card .val { font-size: 20px; font-weight: bold; color: var(--primary); }
+        .card .val.out { color: var(--danger); }
+
+        /* Forms & Inputs */
+        .section { background: var(--card-bg); border: 1px solid #1e3026; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
+        h2 { font-size: 18px; margin-bottom: 15px; color: var(--primary); }
+        .form-group { margin-bottom: 12px; }
+        label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 5px; }
+        input, select { width: 100%; padding: 10px; background: #0d1310; border: 1px solid #253d30; color: white; border-radius: 5px; }
+        button.btn { width: 100%; padding: 10px; background: var(--primary); border: none; color: #000; font-weight: bold; border-radius: 5px; cursor: pointer; }
+        
+        /* Table styling */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+        th, td { border: 1px solid #1e3026; padding: 8px; text-align: center; }
+        th { background: #1a2920; color: var(--primary); }
+
+        /* Lock Screen */
+        .lock-screen { position: fixed; top:0; left:0; width:100%; height:100%; background: #050807; display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:9999; padding:20px; text-align:center; }
+        .lock-screen input { width: 250px; margin-bottom: 10px; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <!-- شاشة قفل الحسابات والاشتراكات -->
+    <div id="lockScreen" class="lock-screen">
+        <h1 class="logo" style="font-size:35px; margin-bottom:10px;">Smart Farmer 🌿</h1>
+        <p style="color:var(--text-muted); margin-bottom:20px;">نظام الإدارة المزارع الذكي المتكامل</p>
+        <div id="loginForm">
+            <input type="text" id="username" placeholder="اسم المستخدم أو المزرعة">
+            <input type="password" id="password" placeholder="كلمة المرور">
+            <button class="btn" style="width:250px;" onclick="handleLogin()">تسجيل الدخول</button>
+        </div>
+        <div id="expiryMsg" class="hidden">
+            <h2 style="color:var(--danger);">عذراً، انتهت فترة صلاحية الاشتراك!</h2>
+            <p style="color:var(--text-muted); margin-top:10px;">الرجاء التواصل مع إدارة Smart Farmer للتجديد ودفع الرسوم.</p>
+        </div>
+    </div>
+
+    <!-- الواجهة الرئيسية للتطبيق بعد الدخول -->
+    <div id="appContent" class="hidden">
+        <header>
+            <div>
+                <span class="logo">Smart Farmer</span>
+                <p id="userFarmName" style="font-size:12px; color:var(--text-muted);"></p>
+            </div>
+            <button class="logout-btn" onclick="handleLogout()">خروج</button>
+        </header>
+
+        <!-- لوحة التحكم الخاصة بالآدمن حسام فقط -->
+        <div id="adminPanel" class="section hidden">
+            <h2>⚙️ لوحة تحكم الآدمن (Hosam Algrary)</h2>
+            <div class="form-group">
+                <label>اسم المزرعة / الحساب الجديد</label>
+                <input type="text" id="newFarmName" placeholder="مثلاً: مزارع وادي الحي السكني">
+            </div>
+            <div class="form-group">
+                <label>نوع النشاط التجاري</label>
+                <select id="newFarmType">
+                    <option value="plant">إنتاج نباتي وأشجار (تين وفواكه)</option>
+                    <option value="animal">إنتاج حيواني وطيور (سمان ومواشي)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>تاريخ انتهاء الاشتراك</label>
+                <input type="date" id="newFarmExpiry">
+            </div>
+            <div class="form-group">
+                <label>كلمة مرور الحساب</label>
+                <input type="text" id="newFarmPass" placeholder="كلمة مرور الزبون">
+            </div>
+            <button class="btn" onclick="createTenant()">إنشاء الحساب وتفعيل الاشتراك 💰</button>
+            
+            <h3 style="margin-top:15px; font-size:14px;">المزارع المشتركة الحالية:</h3>
+            <table id="tenantsTable">
+                <thead>
+                    <tr><th>المزرعة</th><th>النوع</th><th>ينتهي في</th><th>الحالة</th></tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <!-- واجهات المشتركين العاديين -->
+        <div id="userPanel" class="hidden">
+            <nav>
+                <button id="nav-dash" class="active" onclick="switchTab('dash')">الرئيسية</button>
+                <button id="nav-sales" onclick="switchTab('sales')">المبيعات</button>
+                <button id="nav-exp" onclick="switchTab('exp')">المصاريف</button>
+            </nav>
+
+            <!-- تبويب الرئيسية والملخص المالي -->
+            <div id="tab-dash" class="tab-content">
+                <div class="grid">
+                    <div class="card"><h3>إجمالي المبيعات</h3><div class="val" id="totalSales">0 د.ل</div></div>
+                    <div class="card"><h3>إجمالي المصاريف</h3><div class="val out" id="totalExp">0 د.ل</div></div>
+                    <div class="card"><h3>صافي الأرباح</h3><div class="val" id="netProfit" style="color:#3498db;">0 د.ل</div></div>
+                </div>
+                
+                <div class="section">
+                    <h2>📈 حركة المبيعات الأخيرة</h2>
+                    <table id="salesTable">
+                        <thead><tr><th>البيان / الصنف</th><th>الكمية</th><th>الإجمالي</th></tr></thead>
+                        <tbody><tr><td colspan="3" style="color:var(--text-muted)">لا توجد مبيعات مسجلة بعد</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- تبويب إدخال المبيعات -->
+            <div id="tab-sales" class="tab-content hidden">
+                <div class="section">
+                    <h2>🛒 تسجيل عملية بيع جديدة</h2>
+                    <div class="form-group">
+                        <label id="itemLabel">الصنف / المنتج</label>
+                        <select id="saleItem"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>الكمية (كيلو / صندوق / عدد)</label>
+                        <input type="number" id="saleQty" value="1">
+                    </div>
+                    <div class="form-group">
+                        <label>إجمالي سعر البيع (د.ل)</label>
+                        <input type="number" id="salePrice" placeholder="0">
+                    </div>
+                    <button class="btn" onclick="addSale()">حفظ عملية البيع</button>
+                </div>
+            </div>
+
+            <!-- تبويب إدخال المصاريف -->
+            <div id="tab-exp" class="tab-content hidden">
+                <div class="section">
+                    <h2>💸 تسجيل مصروفات جديدة</h2>
+                    <div class="form-group">
+                        <label>بند المصروف (أعلاف، صناديق، أسمدة، عمالة)</label>
+                        <input type="text" id="expName" placeholder="مثلاً: شراء صناديق فارغة">
+                    </div>
+                    <div class="form-group">
+                        <label>القيمة المالية (د.ل)</label>
+                        <input type="number" id="expAmount" placeholder="0">
+                    </div>
+                    <button class="btn" style="background:var(--danger); color:white;" onclick="addExpense()">حفظ المصروف</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // داتا تجريبية مخزنة للآدمن والمزارع
+        if(!localStorage.getItem('tenants')) {
+            const initialTenants = {
+                "admin": {password: "smart123", name: "إدارة Smart Farmer", type: "admin", expiry: "2030-12-31"},
+                "demo": {password: "123", name: "مزرعة الكرموس النموذجية", type: "plant", expiry: "2026-08-01"}
+            };
+            localStorage.setItem('tenants', JSON.stringify(initialTenants));
+        }
+
+        let currentActiveUser = null;
+
+        function handleLogin() {
+            const u = document.getElementById('username').value.trim();
+            const p = document.getElementById('password').value;
+            const tenants = JSON.parse(localStorage.getItem('tenants'));
+
+            if (tenants[u] && tenants[u].password === p) {
+                const today = new Date().toISOString().split('T')[0];
+                if (tenants[u].expiry < today && tenants[u].type !== 'admin') {
+                    document.getElementById('loginForm').classList.add('hidden');
+                    document.getElementById('expiryMsg').classList.remove('hidden');
+                    return;
+                }
+
+                currentActiveUser = u;
+                document.getElementById('lockScreen').classList.add('hidden');
+                document.getElementById('appContent').classList.remove('hidden');
+                document.getElementById('userFarmName').innerText = tenants[u].name;
+
+                if (tenants[u].type === 'admin') {
+                    document.getElementById('adminPanel').classList.remove('hidden');
+                    document.getElementById('userPanel').classList.add('hidden');
+                    renderAdminTable();
+                } else {
+                    document.getElementById('adminPanel').classList.add('hidden');
+                    document.getElementById('userPanel').classList.remove('hidden');
+                    setupUserEnvironment(tenants[u].type);
+                }
+            } else {
+                alert('اسم المستخدم أو كلمة المرور غير صحيحة!');
+            }
+        }
+
+        function handleLogout() {
+            currentActiveUser = null;
+            document.getElementById('lockScreen').classList.remove('hidden');
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('expiryMsg').classList.add('hidden');
+            document.getElementById('appContent').classList.add('hidden');
+        }
+
+        function createTenant() {
+            const name = document.getElementById('newFarmName').value;
+            const type = document.getElementById('newFarmType').value;
+            const expiry = document.getElementById('newFarmExpiry').value;
+            const pass = document.getElementById('newFarmPass').value;
+
+            if(!name || !expiry || !pass) { alert('الرجاء تعبئة كافة الحقول!'); return; }
+
+            const tenants = JSON.parse(localStorage.getItem('tenants'));
+            const usernameId = "user_" + Math.floor(Math.random() * 1000);
+            
+            tenants[usernameId] = {password: pass, name: name, type: type, expiry: expiry};
+            localStorage.setItem('tenants', JSON.stringify(tenants));
+            
+            alert(`تم إنشاء الحساب بنجاح!\nاسم مستخدم الزبون: ${usernameId}\nكلمة المرور: ${pass}`);
+            renderAdminTable();
+        }
+
+        function renderAdminTable() {
+            const tenants = JSON.parse(localStorage.getItem('tenants'));
+            const tbody = document.querySelector('#tenantsTable tbody');
+            tbody.innerHTML = '';
+            for (let id in tenants) {
+                if(tenants[id].type === 'admin') continue;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${tenants[id].name}</td><td>${tenants[id].type === 'plant' ? 'نبأتي' : 'حيواني'}</td><td>${tenants[id].expiry}</td><td style="color:var(--primary)">نشط</td>`;
+                tbody.appendChild(tr);
+            }
+        }
+
+        function setupUserEnvironment(type) {
+            const select = document.getElementById('saleItem');
+            select.innerHTML = '';
+            
+            if(type === 'plant') {
+                document.getElementById('itemLabel').innerText = 'صنف الكرموس / الفاكهة';
+                const items = ['تين جامبو عسلي', 'تين بوحماطي', 'تين نمري مخطط', 'تين براون', 'تين عنق الحمامة', 'تين جامبو أسود فاخر'];
+                items.forEach(i => select.innerHTML += `<option value="${i}">${i}</option>`);
+            } else {
+                document.getElementById('itemLabel').innerText = 'المنتج الإنتاجي (الطيور/الحيوانات)';
+                const items = ['جوز سمان جامبو', 'صندوق بيض سمان (1000 حبة)', 'إنتاج لحوم طيور', 'أعلاف ومستلزمات زائدة'];
+                items.forEach(i => select.innerHTML += `<option value="${i}">${i}</option>`);
+            }
+            loadUserData();
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+            document.getElementById(`tab-${tab}`).classList.remove('hidden');
+            document.getElementById(`nav-${tab}`).classList.add('active');
+        }
+
+        function loadUserData() {
+            let data = localStorage.getItem(`data_${currentActiveUser}`);
+            data = data ? JSON.parse(data) : {sales:[], expenses:[]};
+            
+            let tSales = data.sales.reduce((acc, s) => acc + Number(s.price), 0);
+            let tExp = data.expenses.reduce((acc, e) => acc + Number(e.amount), 0);
+            
+            document.getElementById('totalSales').innerText = tSales + " د.ل";
+            document.getElementById('totalExp').innerText = tExp + " د.ل";
+            document.getElementById('netProfit').innerText = (tSales - tExp) + " د.ل";
+
+            const tbody = document.querySelector('#salesTable tbody');
+            if(data.sales.length > 0) {
+                tbody.innerHTML = '';
+                data.sales.forEach(s => {
+                    tbody.innerHTML += `<tr><td>${s.item}</td><td>${s.qty}</td><td>${s.price} د.ل</td></tr>`;
+                });
+            } else {
+                tbody.innerHTML = `<tr><td colspan="3" style="color:var(--text-muted)">لا توجد مبيعات مسجلة بعد</td></tr>`;
+            }
+        }
+
+        function addSale() {
+            const item = document.getElementById('saleItem').value;
+            const qty = document.getElementById('saleQty').value;
+            const price = document.getElementById('salePrice').value;
+
+            if(!price) { alert('أدخل السعر!'); return; }
+
+            let data = localStorage.getItem(`data_${currentActiveUser}`);
+            data = data ? JSON.parse(data) : {sales:[], expenses:[]};
+            
+            data.sales.push({item, qty, price});
+            localStorage.setItem(`data_${currentActiveUser}`, JSON.stringify(data));
+            
+            alert('تم حفظ عملية البيع!');
+            loadUserData();
+            switchTab('dash');
+        }
+
+        function addExpense() {
+            const name = document.getElementById('expName').value;
+            const amount = document.getElementById('expAmount').value;
+
+            if(!name || !amount) { alert('أدخل كامل البيانات!'); return; }
+
+            let data = localStorage.getItem(`data_${currentActiveUser}`);
+            data = data ? JSON.parse(data) : {sales:[], expenses:[]};
+            
+            data.expenses.push({name, amount});
+            localStorage.setItem(`data_${currentActiveUser}`, JSON.stringify(data));
+            
+            alert('تم حفظ المصروف!');
+            loadUserData();
+            switchTab('dash');
+        }
+    </script>
+</body>
+</html>
