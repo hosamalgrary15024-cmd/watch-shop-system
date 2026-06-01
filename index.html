@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="الكرموس">
+<meta name="theme-color" content="#2e7d32">
+<link rel="manifest" href="manifest.json">
+<title>منظومة مبيعات مزرعة الكرموس</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
+
+:root {
+  --bg: #0c1a0c;
+  --card: #131f13;
+  --card2: #1a2e1a;
+  --green: #00c853;
+  --green2: #2e7d32;
+  --gold: #ffd600;
+  --red: #ef5350;
+  --blue: #42a5f5;
+  --border: #2e7d32;
+  --text: #e8f5e9;
+  --muted: #81c784;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'Cairo', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* NAV */
+.nav {
+  background: #0a150a;
+  border-bottom: 1px solid var(--border);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.nav-title {
+  font-size: 1rem;
+  font-weight: 900;
+  color: var(--green);
+}
+
+.nav-tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.nav-tab {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: 'Cairo', sans-serif;
+  transition: all 0.2s;
+}
+
+.nav-tab.active {
+  background: var(--green2);
+  color: #fff;
+  border-color: var(--green);
+}
+
+/* PAGES */
+.page { display: none; padding: 16px; }
+.page.active { display: block; }
+
+/* STATS ROW */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+@media(max-width:600px) {
+  .stats-row { grid-template-columns: repeat(2,1fr); }
+  .nav-tabs { gap: 4px; }
+  .nav-tab { padding: 4px 8px; font-size: 0.68rem; }
+}
+
+.stat-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 10px;
+  text-align: center;
+}
+
+.stat-card .s-val {
+  font-size: 1.3rem;
+  font-weight: 900;
+}
+
+.stat-card .s-lbl {
+  font-size: 0.68rem;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* FORM */
+.form-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.form-card h2 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--gold);
+  margin-bottom: 14px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+@media(max-width:500px) {
+  .form-grid { grid-template-columns: 1fr; }
+}
+
+.field label {
+  font-size: 0.75rem;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.field input, .field select, .field textarea {
+  width: 100%;
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 0.85rem;
+  color: var(--text);
+  font-family: 'Cairo', sans-serif;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.field input:focus, .field select:focus {
+  border-color: var(--green);
+}
+
+.field.full { grid-column: 1 / -1; }
+
+.btn {
+  background: var(--green2);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Cairo', sans-serif;
+  transition: background 0.2s;
+  width: 100%;
+  margin-top: 12px;
+}
+
+.btn:hover { background: #1b5e20; }
+
+.btn.red { background: #c62828; }
+.btn.red:hover { background: #b71c1c; }
+
+/* TABLE */
+.table-wrap {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.table-header h2 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--gold);
+}
+
+.badge-count {
+  background: var(--green2);
+  color: #fff;
+  border-radius: 20px;
+  padding: 2px 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+
+.data-table th {
+  background: #162016;
+  padding: 8px 10px;
+  text-align: right;
+  color: var(--muted);
+  font-weight: 700;
+  border-bottom: 1px solid var(--border);
+}
+
+.data-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #1a2e1a;
+  vertical-align: middle;
+}
+
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: #162016; }
+
+.del-btn {
+  background: #c6282822;
+  color: var(--red);
+  border: 1px solid #c62828;
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 0.68rem;
+  cursor: pointer;
+  font-family: 'Cairo', sans-serif;
+}
+
+/* REPORT */
+.report-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+@media(max-width:500px) {
+  .report-grid { grid-template-columns: 1fr; }
+}
+
+.report-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.report-card h3 {
+  font-size: 0.85rem;
+  color: var(--gold);
+  margin-bottom: 12px;
+  font-weight: 700;
+}
+
+.report-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 7px 0;
+  border-bottom: 1px solid #1a2e1a;
+  font-size: 0.78rem;
+}
+
+.report-row:last-child { border-bottom: none; }
+.report-row .r-lbl { color: var(--muted); }
+.report-row .r-val { font-weight: 700; }
+.report-row .r-val.green { color: var(--green); }
+.report-row .r-val.red { color: var(--red); }
+.report-row .r-val.gold { color: var(--gold); }
+
+.profit-banner {
+  background: linear-gradient(135deg, #1b5e20, #2e7d32);
+  border-radius: 14px;
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.profit-banner .p-lbl { font-size: 0.8rem; color: #a5d6a7; }
+.profit-banner .p-val { font-size: 2.2rem; font-weight: 900; color: var(--gold); margin: 6px 0; }
+.profit-banner .p-sub { font-size: 0.72rem; color: #a5d6a7; }
+
+/* Filter */
+.filter-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.filter-row input, .filter-row select {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 0.78rem;
+  color: var(--text);
+  font-family: 'Cairo', sans-serif;
+  outline: none;
+  flex: 1;
+  min-width: 120px;
+}
+
+/* Bar chart simple */
+.bar-chart { margin-top: 8px; }
+.bar-item { margin-bottom: 8px; }
+.bar-item .bi-label { font-size: 0.72rem; color: var(--muted); margin-bottom: 3px; display: flex; justify-content: space-between; }
+.bar-wrap { background: #1a2e1a; border-radius: 6px; height: 18px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 6px; background: var(--green2); transition: width 0.5s; }
+
+.empty-state {
+  text-align: center;
+  padding: 30px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  opacity: 0.6;
+}
+
+/* month filter */
+.month-filter {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.mf-btn {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--muted);
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: 'Cairo', sans-serif;
+}
+
+.mf-btn.active {
+  background: var(--green2);
+  color: #fff;
+  border-color: var(--green);
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<div class="nav">
+
+<!-- INSTALL BANNER -->
+<div id="install-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#1b5e20;border-top:2px solid #00c853;padding:12px 16px;z-index:999;align-items:center;justify-content:space-between;gap:10px;">
+  <div style="font-size:0.8rem;font-weight:700;color:#e8f5e9">📲 ثبّت التطبيق على هاتفك!</div>
+  <div style="display:flex;gap:8px">
+    <button id="install-btn" style="background:#00c853;color:#000;border:none;border-radius:8px;padding:6px 14px;font-size:0.78rem;font-weight:900;cursor:pointer;font-family:'Cairo',sans-serif">تثبيت</button>
+    <button id="install-close" style="background:transparent;color:#81c784;border:1px solid #2e7d32;border-radius:8px;padding:6px 10px;font-size:0.78rem;cursor:pointer;font-family:'Cairo',sans-serif">×</button>
+  </div>
+</div>
+  <div class="nav-title">🌿 مزرعة الكرموس</div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('dashboard')">الرئيسية</button>
+    <button class="nav-tab" onclick="showPage('sales')">المبيعات</button>
+    <button class="nav-tab" onclick="showPage('expenses')">المصاريف</button>
+    <button class="nav-tab" onclick="showPage('report')">التقارير</button>
+  </div>
+</div>
+
+<!-- ===== DASHBOARD ===== -->
+<div class="page active" id="page-dashboard">
+  <div style="padding:8px 0 14px;font-size:0.82rem;color:var(--muted)" id="todayDate"></div>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="s-val" style="color:var(--green)" id="dash-totalSales">0</div>
+      <div class="s-lbl">إجمالي المبيعات</div>
+    </div>
+    <div class="stat-card">
+      <div class="s-val" style="color:var(--red)" id="dash-totalExp">0</div>
+      <div class="s-lbl">إجمالي المصاريف</div>
+    </div>
+    <div class="stat-card">
+      <div class="s-val" style="color:var(--gold)" id="dash-profit">0</div>
+      <div class="s-lbl">صافي الربح</div>
+    </div>
+    <div class="stat-card">
+      <div class="s-val" style="color:var(--blue)" id="dash-txCount">0</div>
+      <div class="s-lbl">عدد العمليات</div>
+    </div>
+  </div>
+
+  <!-- Today summary -->
+  <div class="form-card">
+    <h2>📅 اليوم</h2>
+    <div class="stats-row" style="margin-bottom:0">
+      <div class="stat-card">
+        <div class="s-val" style="color:var(--green)" id="today-sales">0</div>
+        <div class="s-lbl">مبيعات اليوم</div>
+      </div>
+      <div class="stat-card">
+        <div class="s-val" style="color:var(--red)" id="today-exp">0</div>
+        <div class="s-lbl">مصاريف اليوم</div>
+      </div>
+      <div class="stat-card">
+        <div class="s-val" style="color:var(--gold)" id="today-profit">0</div>
+        <div class="s-lbl">ربح اليوم</div>
+      </div>
+      <div class="stat-card">
+        <div class="s-val" style="color:var(--blue)" id="today-kg">0</div>
+        <div class="s-lbl">كيلو اليوم</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top products -->
+  <div class="form-card">
+    <h2>🏆 أكثر المنتجات مبيعاً</h2>
+    <div class="bar-chart" id="topProducts">
+      <div class="empty-state">لا توجد مبيعات بعد</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SALES ===== -->
+<div class="page" id="page-sales">
+  <div class="form-card">
+    <h2>➕ تسجيل بيعة جديدة</h2>
+    <div class="form-grid">
+      <div class="field">
+        <label>التاريخ</label>
+        <input type="date" id="sale-date">
+      </div>
+      <div class="field">
+        <label>نوع المنتج</label>
+        <select id="sale-product">
+          <option value="كرموس طازج">كرموس طازج</option>
+          <option value="كرموس مجفف">كرموس مجفف</option>
+          <option value="مربى كرموس">مربى كرموس</option>
+          <option value="خل تين">خل تين</option>
+          <option value="أخرى">أخرى</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>الكمية (كيلو)</label>
+        <input type="number" id="sale-qty" placeholder="0" min="0" step="0.5">
+      </div>
+      <div class="field">
+        <label>سعر الكيلو (دينار)</label>
+        <input type="number" id="sale-price" placeholder="0" min="0" step="0.5">
+      </div>
+      <div class="field">
+        <label>اسم الزبون (اختياري)</label>
+        <input type="text" id="sale-customer" placeholder="مثال: أبو محمد">
+      </div>
+      <div class="field">
+        <label>طريقة الدفع</label>
+        <select id="sale-pay">
+          <option value="كاش">كاش</option>
+          <option value="تحويل">تحويل</option>
+          <option value="آجل">آجل</option>
+        </select>
+      </div>
+      <div class="field full">
+        <label>ملاحظة</label>
+        <input type="text" id="sale-note" placeholder="أي ملاحظة إضافية...">
+      </div>
+    </div>
+    <div style="background:var(--card2);border-radius:8px;padding:10px;margin-top:10px;text-align:center;font-size:0.85rem;">
+      الإجمالي: <span style="color:var(--gold);font-weight:900;font-size:1.1rem" id="sale-total">0</span> دينار
+    </div>
+    <button class="btn" onclick="addSale()">💰 تسجيل البيعة</button>
+  </div>
+
+  <!-- Filter -->
+  <div class="filter-row">
+    <input type="date" id="filter-sale-from" placeholder="من تاريخ">
+    <input type="date" id="filter-sale-to" placeholder="إلى تاريخ">
+    <select id="filter-sale-product" onchange="renderSalesTable()">
+      <option value="">كل المنتجات</option>
+      <option value="كرموس طازج">كرموس طازج</option>
+      <option value="كرموس مجفف">كرموس مجفف</option>
+      <option value="مربى كرموس">مربى كرموس</option>
+      <option value="خل تين">خل تين</option>
+      <option value="أخرى">أخرى</option>
+    </select>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">
+      <h2>📋 سجل المبيعات</h2>
+      <span class="badge-count" id="sales-count">0</span>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>التاريخ</th>
+            <th>المنتج</th>
+            <th>الكمية</th>
+            <th>السعر</th>
+            <th>الإجمالي</th>
+            <th>الزبون</th>
+            <th>الدفع</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="sales-tbody">
+          <tr><td colspan="8" class="empty-state">لا توجد مبيعات مسجلة</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ===== EXPENSES ===== -->
+<div class="page" id="page-expenses">
+  <div class="form-card">
+    <h2>➕ تسجيل مصروف جديد</h2>
+    <div class="form-grid">
+      <div class="field">
+        <label>التاريخ</label>
+        <input type="date" id="exp-date">
+      </div>
+      <div class="field">
+        <label>نوع المصروف</label>
+        <select id="exp-cat">
+          <option value="ري وماء">ري وماء</option>
+          <option value="أسمدة">أسمدة</option>
+          <option value="مبيدات">مبيدات</option>
+          <option value="عمالة">عمالة</option>
+          <option value="وقود ومولد">وقود ومولد</option>
+          <option value="صيانة">صيانة</option>
+          <option value="شتلات">شتلات</option>
+          <option value="تغليف">تغليف</option>
+          <option value="نقل">نقل</option>
+          <option value="أخرى">أخرى</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>المبلغ (دينار)</label>
+        <input type="number" id="exp-amount" placeholder="0" min="0">
+      </div>
+      <div class="field">
+        <label>المورد / المستفيد</label>
+        <input type="text" id="exp-vendor" placeholder="مثال: محل البذور">
+      </div>
+      <div class="field full">
+        <label>وصف</label>
+        <input type="text" id="exp-desc" placeholder="تفاصيل المصروف...">
+      </div>
+    </div>
+    <button class="btn" onclick="addExpense()">💸 تسجيل المصروف</button>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">
+      <h2>📋 سجل المصاريف</h2>
+      <span class="badge-count" id="exp-count">0</span>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>التاريخ</th>
+            <th>النوع</th>
+            <th>المبلغ</th>
+            <th>المورد</th>
+            <th>الوصف</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="exp-tbody">
+          <tr><td colspan="6" class="empty-state">لا توجد مصاريف مسجلة</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ===== REPORT ===== -->
+<div class="page" id="page-report">
+
+  <div class="month-filter" id="monthFilter"></div>
+
+  <div class="profit-banner">
+    <div class="p-lbl">صافي الربح</div>
+    <div class="p-val" id="rep-profit">0 دينار</div>
+    <div class="p-sub" id="rep-period">كل الفترات</div>
+  </div>
+
+  <div class="report-grid">
+    <div class="report-card">
+      <h3>💰 المبيعات</h3>
+      <div class="report-row"><span class="r-lbl">إجمالي المبيعات</span><span class="r-val green" id="rep-sales">0</span></div>
+      <div class="report-row"><span class="r-lbl">إجمالي الكيلوات</span><span class="r-val" id="rep-kg">0</span></div>
+      <div class="report-row"><span class="r-lbl">متوسط سعر الكيلو</span><span class="r-val" id="rep-avgprice">0</span></div>
+      <div class="report-row"><span class="r-lbl">عدد العمليات</span><span class="r-val" id="rep-salescount">0</span></div>
+    </div>
+    <div class="report-card">
+      <h3>💸 المصاريف</h3>
+      <div class="report-row"><span class="r-lbl">إجمالي المصاريف</span><span class="r-val red" id="rep-exp">0</span></div>
+      <div class="report-row"><span class="r-lbl">أكبر مصروف</span><span class="r-val" id="rep-maxexp">—</span></div>
+      <div class="report-row"><span class="r-lbl">عدد المصاريف</span><span class="r-val" id="rep-expcount">0</span></div>
+      <div class="report-row"><span class="r-lbl">نسبة المصاريف</span><span class="r-val" id="rep-exppct">0%</span></div>
+    </div>
+  </div>
+
+  <!-- Sales by product -->
+  <div class="form-card">
+    <h2>📊 المبيعات حسب المنتج</h2>
+    <div class="bar-chart" id="rep-byProduct">
+      <div class="empty-state">لا توجد بيانات</div>
+    </div>
+  </div>
+
+  <!-- Expenses by category -->
+  <div class="form-card">
+    <h2>📊 المصاريف حسب النوع</h2>
+    <div class="bar-chart" id="rep-byCat">
+      <div class="empty-state">لا توجد بيانات</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ---- DATA ----
+let sales = JSON.parse(localStorage.getItem('farm_sales') || '[]');
+let expenses = JSON.parse(localStorage.getItem('farm_expenses') || '[]');
+let selectedMonth = 'all';
+
+function save() {
+  localStorage.setItem('farm_sales', JSON.stringify(sales));
+  localStorage.setItem('farm_expenses', JSON.stringify(expenses));
+}
+
+// ---- HELPERS ----
+function fmt(n) {
+  return (n || 0).toLocaleString('ar-LY', {maximumFractionDigits: 0}) + ' د';
+}
+
+function today() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function getMonths() {
+  const all = [...sales.map(s=>s.date), ...expenses.map(e=>e.date)];
+  const months = [...new Set(all.map(d => d.substring(0,7)))].sort().reverse();
+  return months;
+}
+
+// ---- PAGES ----
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  event.target.classList.add('active');
+  if (id === 'report') renderReport();
+  if (id === 'dashboard') renderDashboard();
+}
+
+// ---- INIT DATES ----
+document.getElementById('sale-date').value = today();
+document.getElementById('exp-date').value = today();
+document.getElementById('todayDate').textContent = '📅 ' + new Date().toLocaleDateString('ar-LY', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+
+// ---- LIVE TOTAL ----
+['sale-qty','sale-price'].forEach(id => {
+  document.getElementById(id).addEventListener('input', () => {
+    const q = parseFloat(document.getElementById('sale-qty').value) || 0;
+    const p = parseFloat(document.getElementById('sale-price').value) || 0;
+    document.getElementById('sale-total').textContent = (q * p).toLocaleString('ar-LY', {maximumFractionDigits:1});
+  });
+});
+
+// ---- ADD SALE ----
+function addSale() {
+  const date = document.getElementById('sale-date').value;
+  const product = document.getElementById('sale-product').value;
+  const qty = parseFloat(document.getElementById('sale-qty').value);
+  const price = parseFloat(document.getElementById('sale-price').value);
+  const customer = document.getElementById('sale-customer').value;
+  const pay = document.getElementById('sale-pay').value;
+  const note = document.getElementById('sale-note').value;
+
+  if (!date || !qty || !price) { alert('أكمل التاريخ والكمية والسعر'); return; }
+
+  sales.unshift({ id: Date.now(), date, product, qty, price, total: qty*price, customer, pay, note });
+  save();
+  renderSalesTable();
+  renderDashboard();
+
+  // reset
+  document.getElementById('sale-qty').value = '';
+  document.getElementById('sale-price').value = '';
+  document.getElementById('sale-customer').value = '';
+  document.getElementById('sale-note').value = '';
+  document.getElementById('sale-total').textContent = '0';
+}
+
+// ---- ADD EXPENSE ----
+function addExpense() {
+  const date = document.getElementById('exp-date').value;
+  const cat = document.getElementById('exp-cat').value;
+  const amount = parseFloat(document.getElementById('exp-amount').value);
+  const vendor = document.getElementById('exp-vendor').value;
+  const desc = document.getElementById('exp-desc').value;
+
+  if (!date || !amount) { alert('أكمل التاريخ والمبلغ'); return; }
+
+  expenses.unshift({ id: Date.now(), date, cat, amount, vendor, desc });
+  save();
+  renderExpTable();
+  renderDashboard();
+
+  document.getElementById('exp-amount').value = '';
+  document.getElementById('exp-vendor').value = '';
+  document.getElementById('exp-desc').value = '';
+}
+
+// ---- DELETE ----
+function deleteSale(id) {
+  if (!confirm('تحذف هاذي البيعة؟')) return;
+  sales = sales.filter(s => s.id !== id);
+  save(); renderSalesTable(); renderDashboard();
+}
+
+function deleteExp(id) {
+  if (!confirm('تحذف هاذا المصروف؟')) return;
+  expenses = expenses.filter(e => e.id !== id);
+  save(); renderExpTable(); renderDashboard();
+}
+
+// ---- RENDER SALES TABLE ----
+function renderSalesTable() {
+  const from = document.getElementById('filter-sale-from').value;
+  const to = document.getElementById('filter-sale-to').value;
+  const prod = document.getElementById('filter-sale-product').value;
+
+  let filtered = sales.filter(s => {
+    if (from && s.date < from) return false;
+    if (to && s.date > to) return false;
+    if (prod && s.product !== prod) return false;
+    return true;
+  });
+
+  document.getElementById('sales-count').textContent = filtered.length;
+
+  const tbody = document.getElementById('sales-tbody');
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">لا توجد مبيعات</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(s => `
+    <tr>
+      <td>${s.date}</td>
+      <td>${s.product}</td>
+      <td>${s.qty} كغ</td>
+      <td>${s.price} د</td>
+      <td style="color:var(--gold);font-weight:700">${fmt(s.total)}</td>
+      <td>${s.customer || '—'}</td>
+      <td><span style="font-size:0.7rem;padding:2px 6px;border-radius:10px;background:${s.pay==='آجل'?'#c6282833':'#1b5e2033'};color:${s.pay==='آجل'?'var(--red)':'var(--green)'}">${s.pay}</span></td>
+      <td><button class="del-btn" onclick="deleteSale(${s.id})">حذف</button></td>
+    </tr>
+  `).join('');
+}
+
+// ---- RENDER EXP TABLE ----
+function renderExpTable() {
+  document.getElementById('exp-count').textContent = expenses.length;
+  const tbody = document.getElementById('exp-tbody');
+  if (!expenses.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">لا توجد مصاريف</td></tr>';
+    return;
+  }
+  tbody.innerHTML = expenses.map(e => `
+    <tr>
+      <td>${e.date}</td>
+      <td>${e.cat}</td>
+      <td style="color:var(--red);font-weight:700">${fmt(e.amount)}</td>
+      <td>${e.vendor || '—'}</td>
+      <td>${e.desc || '—'}</td>
+      <td><button class="del-btn" onclick="deleteExp(${e.id})">حذف</button></td>
+    </tr>
+  `).join('');
+}
+
+// ---- RENDER DASHBOARD ----
+function renderDashboard() {
+  const totalSales = sales.reduce((a,s) => a+s.total, 0);
+  const totalExp = expenses.reduce((a,e) => a+e.amount, 0);
+  const profit = totalSales - totalExp;
+
+  document.getElementById('dash-totalSales').textContent = fmt(totalSales);
+  document.getElementById('dash-totalExp').textContent = fmt(totalExp);
+  document.getElementById('dash-profit').textContent = fmt(profit);
+  document.getElementById('dash-txCount').textContent = sales.length + expenses.length;
+
+  const t = today();
+  const todaySales = sales.filter(s => s.date === t).reduce((a,s) => a+s.total, 0);
+  const todayExp = expenses.filter(e => e.date === t).reduce((a,e) => a+e.amount, 0);
+  const todayKg = sales.filter(s => s.date === t).reduce((a,s) => a+s.qty, 0);
+
+  document.getElementById('today-sales').textContent = fmt(todaySales);
+  document.getElementById('today-exp').textContent = fmt(todayExp);
+  document.getElementById('today-profit').textContent = fmt(todaySales - todayExp);
+  document.getElementById('today-kg').textContent = todayKg + ' كغ';
+
+  // Top products
+  const byProd = {};
+  sales.forEach(s => { byProd[s.product] = (byProd[s.product]||0) + s.total; });
+  const sorted = Object.entries(byProd).sort((a,b) => b[1]-a[1]);
+  const max = sorted[0]?.[1] || 1;
+  const cont = document.getElementById('topProducts');
+
+  if (!sorted.length) {
+    cont.innerHTML = '<div class="empty-state">لا توجد مبيعات بعد</div>';
+  } else {
+    cont.innerHTML = sorted.map(([p,v]) => `
+      <div class="bar-item">
+        <div class="bi-label"><span>${p}</span><span style="color:var(--gold)">${fmt(v)}</span></div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:${v/max*100}%"></div></div>
+      </div>
+    `).join('');
+  }
+}
+
+// ---- RENDER REPORT ----
+function renderReport() {
+  // Build month filter
+  const months = getMonths();
+  const mf = document.getElementById('monthFilter');
+  mf.innerHTML = `<button class="mf-btn ${selectedMonth==='all'?'active':''}" onclick="setMonth('all')">الكل</button>`;
+  months.forEach(m => {
+    const label = new Date(m+'-01').toLocaleDateString('ar-LY', {year:'numeric', month:'long'});
+    mf.innerHTML += `<button class="mf-btn ${selectedMonth===m?'active':''}" onclick="setMonth('${m}')">${label}</button>`;
+  });
+
+  // Filter data
+  let filtSales = sales;
+  let filtExp = expenses;
+  if (selectedMonth !== 'all') {
+    filtSales = sales.filter(s => s.date.startsWith(selectedMonth));
+    filtExp = expenses.filter(e => e.date.startsWith(selectedMonth));
+  }
+
+  const totalSales = filtSales.reduce((a,s) => a+s.total, 0);
+  const totalExp = filtExp.reduce((a,e) => a+e.amount, 0);
+  const profit = totalSales - totalExp;
+  const totalKg = filtSales.reduce((a,s) => a+s.qty, 0);
+  const avgPrice = totalKg > 0 ? totalSales/totalKg : 0;
+  const maxExp = filtExp.length ? filtExp.reduce((a,e) => e.amount>a.amount?e:a, filtExp[0]) : null;
+
+  document.getElementById('rep-profit').textContent = fmt(profit);
+  document.getElementById('rep-profit').style.color = profit >= 0 ? 'var(--gold)' : 'var(--red)';
+  document.getElementById('rep-period').textContent = selectedMonth === 'all' ? 'كل الفترات' : new Date(selectedMonth+'-01').toLocaleDateString('ar-LY', {year:'numeric',month:'long'});
+
+  document.getElementById('rep-sales').textContent = fmt(totalSales);
+  document.getElementById('rep-kg').textContent = totalKg.toLocaleString('ar-LY') + ' كغ';
+  document.getElementById('rep-avgprice').textContent = avgPrice.toFixed(1) + ' د/كغ';
+  document.getElementById('rep-salescount').textContent = filtSales.length;
+
+  document.getElementById('rep-exp').textContent = fmt(totalExp);
+  document.getElementById('rep-maxexp').textContent = maxExp ? maxExp.cat + ' ' + fmt(maxExp.amount) : '—';
+  document.getElementById('rep-expcount').textContent = filtExp.length;
+  document.getElementById('rep-exppct').textContent = totalSales > 0 ? (totalExp/totalSales*100).toFixed(1)+'%' : '0%';
+
+  // By product
+  const byProd = {};
+  filtSales.forEach(s => { byProd[s.product] = (byProd[s.product]||0) + s.total; });
+  const sortedP = Object.entries(byProd).sort((a,b)=>b[1]-a[1]);
+  const maxP = sortedP[0]?.[1]||1;
+  const bpEl = document.getElementById('rep-byProduct');
+  bpEl.innerHTML = sortedP.length ? sortedP.map(([p,v]) => `
+    <div class="bar-item">
+      <div class="bi-label"><span>${p}</span><span style="color:var(--gold)">${fmt(v)}</span></div>
+      <div class="bar-wrap"><div class="bar-fill" style="width:${v/maxP*100}%"></div></div>
+    </div>
+  `).join('') : '<div class="empty-state">لا توجد بيانات</div>';
+
+  // By category
+  const byCat = {};
+  filtExp.forEach(e => { byCat[e.cat] = (byCat[e.cat]||0) + e.amount; });
+  const sortedC = Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
+  const maxC = sortedC[0]?.[1]||1;
+  const bcEl = document.getElementById('rep-byCat');
+  bcEl.innerHTML = sortedC.length ? sortedC.map(([c,v]) => `
+    <div class="bar-item">
+      <div class="bi-label"><span>${c}</span><span style="color:var(--red)">${fmt(v)}</span></div>
+      <div class="bar-wrap"><div class="bar-fill" style="width:${v/maxC*100}%;background:#c62828"></div></div>
+    </div>
+  `).join('') : '<div class="empty-state">لا توجد بيانات</div>';
+}
+
+function setMonth(m) {
+  selectedMonth = m;
+  renderReport();
+}
+
+// Filter listeners
+document.getElementById('filter-sale-from').addEventListener('change', renderSalesTable);
+document.getElementById('filter-sale-to').addEventListener('change', renderSalesTable);
+
+// Init
+renderSalesTable();
+renderExpTable();
+renderDashboard();
+
+// ---- PWA SERVICE WORKER ----
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').then(reg => {
+      console.log('SW registered');
+    }).catch(err => console.log('SW error:', err));
+  });
+}
+
+// ---- INSTALL PROMPT ----
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Show install banner
+  const banner = document.getElementById('install-banner');
+  if (banner) banner.style.display = 'flex';
+});
+
+document.getElementById('install-btn')?.addEventListener('click', () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(() => {
+      deferredPrompt = null;
+      const banner = document.getElementById('install-banner');
+      if (banner) banner.style.display = 'none';
+    });
+  }
+});
+
+document.getElementById('install-close')?.addEventListener('click', () => {
+  const banner = document.getElementById('install-banner');
+  if (banner) banner.style.display = 'none';
+});
+</script>
+</body>
+</html>
